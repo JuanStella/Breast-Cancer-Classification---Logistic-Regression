@@ -39,7 +39,7 @@ class Algorithm:
         
         if (x1+x2) < bnorm:
             return "El tumor es benigno"
-        else:
+        elif (x1+x2) >= bnorm:
             return "El tumor es maligno"
     
 
@@ -72,13 +72,12 @@ class Algorithm:
         w_norm = sgdr.coef_
 
         z = np.dot(self.x, w_norm) + b_norm
-        X_features = ['radius_mean','texture_mean','perimeter_mean','area_mean','smoothness_mean','compactness_mean','concavity_mean','concave points_mean','symmetry_mean','fractal_dimension_mean',
-                      'radius_se,texture_se,perimeter_se,area_se','smoothness_se,compactness_se','concavity_se,concave points_se','symmetry_se',
-                      'fractal_dimension_se','radius_worst','texture_worst','perimeter_worst','area_worst','smoothness_worst','compactness_worst','concavity_worst','concave points_worst'
-                      ,'symmetry_worst','fractal_dimension_worst']
+        X_features = ['radius_mean','texture_mean','perimeter_mean','area_mean','smoothness_mean','compactness_mean','concavity_mean','concave points_mean','symmetry_mean',
+                      'fractal_dimension_mean','radius_se,texture_se,perimeter_se,area_se','smoothness_se,compactness_se','concavity_se,concave points_se','symmetry_se',
+                      'fractal_dimension_se','radius_worst','texture_worst','perimeter_worst','area_worst','smoothness_worst','compactness_worst','concavity_worst',
+                      'concave points_worst','symmetry_worst','fractal_dimension_worst']
 
         fig,ax=plt.subplots(1,2,figsize=(12,3),sharey=True)
-
 
         aprox = self.sigmoid(z)
 
@@ -125,8 +124,6 @@ def main():
     else:
         print("No se pudieron cargar los datos.")
     return None
-
-    
 
 
 if __name__ == '__main__':
