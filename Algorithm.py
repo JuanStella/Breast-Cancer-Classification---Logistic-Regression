@@ -35,19 +35,12 @@ class Algorithm:
         return g
     
 
-    def predict (self, g, x = None):
-        x = x*999/13
-        x = int(x)
-        probability = g[x]
-    
-        if probability >= 0.5:
-            diagnosis = "maligno"
-            certainty = probability * 100
-        else:
-            diagnosis = "benigno"
-            certainty = (1 - probability) * 100
-        return (f"Hay un {certainty:.2f}% de probabilidad de que el tumor sea {diagnosis}.")
+    def predict (self, x1, x2, bnorm):
         
+        if (x1+x2) < bnorm:
+            return "El tumor es benigno"
+        else:
+            return "El tumor es maligno"
     
 
     def fit (self, data):
@@ -55,8 +48,12 @@ class Algorithm:
         self.x = np.zeros((len(data), 2))
         self.y = np.zeros(len(data))
 
-        self.x[:,0] = data[:, 1]
-        self.x[:,1] = data[:, 2]
+        '''for i in range(1,3):
+            self.x[:,i-1] = data[:,i]'''
+        
+        self.x[:,0] = data[:,1]
+        self.x[:,1] = data[:,2]
+
 
         for i in range(len(data)):
             if data[i,0] == "M":
@@ -75,7 +72,10 @@ class Algorithm:
         w_norm = sgdr.coef_
 
         z = np.dot(self.x, w_norm) + b_norm
-        X_features = ["Size", "Texture"]
+        X_features = ['radius_mean','texture_mean','perimeter_mean','area_mean','smoothness_mean','compactness_mean','concavity_mean','concave points_mean','symmetry_mean','fractal_dimension_mean',
+                      'radius_se,texture_se,perimeter_se,area_se','smoothness_se,compactness_se','concavity_se,concave points_se','symmetry_se',
+                      'fractal_dimension_se','radius_worst','texture_worst','perimeter_worst','area_worst','smoothness_worst','compactness_worst','concavity_worst','concave points_worst'
+                      ,'symmetry_worst','fractal_dimension_worst']
 
         fig,ax=plt.subplots(1,2,figsize=(12,3),sharey=True)
 
@@ -90,32 +90,28 @@ class Algorithm:
         fig.suptitle("target versus prediction using z-score normalized model")
         plt.show()
 
-        # Graficar la función sigmoidea
-        fig, ax = plt.subplots(1, 2, figsize=(16, 6))
+        # Graficar x1 (radius_mean) y x2 (texture_mean)
+        x1 = self.x[:, 0]
+        x2 = self.x[:, 1]
 
-        for i in range(2):
-            max = (int(self.x[:,i].max()+4))
-            min = (int(self.x[:,i].min()-4))
-            print(max, min)
-            #print(max, min)
-            x_range = np.linspace(min, max, 1000)
-            z_range = w_norm[i] * x_range + b_norm
-            sigmoid = self.sigmoid(z_range)
-        
-            print(self.predict(sigmoid, 2))
+        xplot1 = np.linspace(x1.min(), x1.max(), 100)
+        xplot2 = np.linspace(x2.min(), x2.max(), 100)
 
-            ax[i].scatter(self.x[:,i], self.y, label='Target', alpha=0.5)
-            ax[i].plot(x_range, sigmoid, color='red', label='Función Sigmoidea')
-        
-            ax[i].set_xlabel(X_features[i])
-            ax[i].set_ylabel("Probabilidad de Diagnóstico Maligno")
-            ax[i].legend()
-            ax[i].set_title(f"Función Sigmoidea: {X_features[i]} vs Probabilidad")
 
-            ax[i].set_ylim(-0.1, 1.1)
-
-        plt.tight_layout()
+        xplot1 = b_norm - xplot2
+        # Graficar puntos reales
+        plt.figure(figsize=(10, 6))
+        plt.scatter(x1[self.y == 1], x2[self.y == 1], color='red', alpha=0.7, label='Maligno (Real)')
+        plt.scatter(x1[self.y == 0], x2[self.y == 0], color='blue', alpha=0.7, label='Benigno (Real)')
+        plt.plot(xplot1, xplot2, color='green', label='Boundary')
+        plt.scatter(2, 2, color='black', label='Unknown Tumor')
+        plt.xlabel('radius_mean')
+        plt.ylabel('texture_mean')
+        plt.title('Visualización de datos de cáncer de mama')
+        plt.legend()
         plt.show()
+
+        print(self.predict (2,2,b_norm))
 
         return aprox
     
